@@ -869,12 +869,17 @@ def assert_metrics(self, metrics):
             self.mean_e2e_latency * E2E_TOLERANCE,
         )
 
+proxies = {
+        "http": os.environ.get("http_proxy"),
+        "https": os.environ.get("https_proxy"),
+        }
+
 def file_is_up_to_date(local_path: Path, remote_url: str):
 
     if not local_path.exists():
         return False
 
-    resp = requests.head(remote_url, allow_redirections=True)
+    resp = requests.head(remote_url, verify=False, proxies=proxies)
 
     resp.raise_for_status()
 
@@ -893,14 +898,10 @@ def _download_dataset(name: str, remote_url: str):
     file_path = download_path / name
 
     if file_is_up_to_date(file_path, remote_url):
+        print(f"Skip downloading {file_path}. File exists")
         return
 
-    proxies = {
-            "http": os.environ.get("http_proxy"),
-            "https": os.environ.get("https_proxy"),
-            }
-
-    ret = requests.get(remote_address, verify=False, proxies=proxies)
+    ret = requests.get(remote_url, verify=False, proxies=proxies)
     # print download stats 
 
     with open(file_path, "wb") as f:

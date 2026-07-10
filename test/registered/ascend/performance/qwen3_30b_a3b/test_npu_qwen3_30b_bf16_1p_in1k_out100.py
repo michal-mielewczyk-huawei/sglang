@@ -111,31 +111,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     output_token_throughput = 2047.81
     max_attempts = 4
 
-#    def _download_dataset(self, name: str, remote_address: str):
-#        download_path = KVTC_DATASET_PATH
-#        download_path.mkdir(parents=True, exist_ok=True)
-#
-#        proxies = {
-#                "http": os.environ.get("http_proxy"),
-#                "https": os.environ.get("https_proxy"),
-#                }
-#
-#        ret = requests.get(remote_address, verify=False, proxies=proxies)
-#        # print download stats 
-#
-#        file_path = download_path / name
-#        with open(file_path, "wb") as f:
-#            f.write(ret.content)
-#
-#        return file_path
-#
-#    def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-#        remote_address = "https://huggingface.co/datasets/HuggingFaceFW/fineweb/blob/main/data/CC-MAIN-2025-26/000_00000.parquet"
-#
-#        openmath_path = _download_dataset("openmath", remote_address)
-#        openmath_dataset = pd.read_parquet(file_path)
-
-
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
         base_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "datasets"
         short_promts_file = base_dir / "low_token_openmath.txt"
@@ -145,7 +120,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         host = parsed_url.hostname
         port = parsed_url.port
 
-        #openmath_path = self._download_dataset("openmath", remote_address)
         openmath_path = self.dataset_path
 
         with open(short_promts_file) as f:
@@ -157,9 +131,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         openmath_dataset = pd.read_parquet(openmath_path).iloc
 
         client = openai.Client(base_url=f"http://{host}:{port}/v1", api_key="None")
-
-#        for idx in prompt_indices:
-#            print(openmath_dataset[idx])
 
         for i, entry in enumerate(openmath_dataset):
             if i > 2:
