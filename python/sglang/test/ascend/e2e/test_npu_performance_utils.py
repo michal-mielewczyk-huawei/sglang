@@ -6,6 +6,9 @@ import threading
 import time
 from functools import wraps
 from urllib.parse import urlparse
+import threading
+from pathlib import Path
+import requests
 
 from sglang.srt.utils import kill_process_tree
 from sglang.test.ascend.e2e.gen_dataset_fixed_len import (
@@ -867,7 +870,26 @@ def assert_metrics(self, metrics):
         )
 
 
+def _download_dataset(name: str, remote_address: str):
+    download_path = KVTC_DATASET_PATH
+    download_path.mkdir(parents=True, exist_ok=True)
+
+    proxies = {
+            "http": os.environ.get("http_proxy"),
+            "https": os.environ.get("https_proxy"),
+            }
+
+    ret = requests.get(remote_address, verify=False, proxies=proxies)
+    # print download stats 
+
+    file_path = download_path / name
+    with open(file_path, "wb") as f:
+        f.write(ret.content)
+
+    return file_path
+
 # This is the base class
+KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
 class TestAscendPerformanceTestCaseBase(CustomTestCase):
     model = None
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
@@ -901,6 +923,7 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
     generation_kwargs = None
     pop_sglang_is_in_ci_for_gsp = False
 
+
     @classmethod
     def setUpClass(cls):
         cls.base_url = DEFAULT_URL_FOR_TEST
@@ -914,6 +937,12 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         other_args = list(cls.other_args)
 
+        cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
+        cls.dataset_name = "openmath"
+        cls.download_worker = threading.Thread(target=_download_dataset, args=(cls.dataset_name, cls.remote_address))
+
+        cls.download_worker.start()
+
         cls.process = popen_launch_server(
             cls.model,
             cls.base_url,
@@ -921,6 +950,9 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
             other_args=other_args,
             env=env,
         )
+
+        cls.download_worker.join()
+        cls.dataset_path = KVTC_DATASET_PATH / cls.dataset_name
 
     @classmethod
     def tearDownClass(cls):

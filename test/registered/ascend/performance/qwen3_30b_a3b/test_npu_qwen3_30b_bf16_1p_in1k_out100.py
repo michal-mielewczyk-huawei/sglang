@@ -94,8 +94,6 @@ OTHER_ARGS = [
     "qwen",
 ]
 
-KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
-
 class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
@@ -113,24 +111,24 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     output_token_throughput = 2047.81
     max_attempts = 4
 
-    def _download_dataset(self, name: str, remote_address: str):
-        download_path = KVTC_DATASET_PATH
-        download_path.mkdir(parents=True, exist_ok=True)
-
-        proxies = {
-                "http": os.environ.get("http_proxy"),
-                "https": os.environ.get("https_proxy"),
-                }
-
-        ret = requests.get(remote_address, verify=False, proxies=proxies)
-        # print download stats 
-
-        file_path = download_path / name
-        with open(file_path, "wb") as f:
-            f.write(ret.content)
-
-        return file_path
-
+#    def _download_dataset(self, name: str, remote_address: str):
+#        download_path = KVTC_DATASET_PATH
+#        download_path.mkdir(parents=True, exist_ok=True)
+#
+#        proxies = {
+#                "http": os.environ.get("http_proxy"),
+#                "https": os.environ.get("https_proxy"),
+#                }
+#
+#        ret = requests.get(remote_address, verify=False, proxies=proxies)
+#        # print download stats 
+#
+#        file_path = download_path / name
+#        with open(file_path, "wb") as f:
+#            f.write(ret.content)
+#
+#        return file_path
+#
 #    def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
 #        remote_address = "https://huggingface.co/datasets/HuggingFaceFW/fineweb/blob/main/data/CC-MAIN-2025-26/000_00000.parquet"
 #
@@ -142,9 +140,9 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         base_dir = Path(os.path.dirname(os.path.realpath(__file__))/"datasets")
         short_promts_file = basedir / "low_token_openmath.txt"
         long_promts_file = basedir / "high_token_openmath.txt"
-        remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
 
-        openmath_path = self._download_dataset("openmath", remote_address)
+        #openmath_path = self._download_dataset("openmath", remote_address)
+        openmath_path = self.dataset_path
 
         with open(short_promts_file) as f:
             short_promts = f.readlines()
