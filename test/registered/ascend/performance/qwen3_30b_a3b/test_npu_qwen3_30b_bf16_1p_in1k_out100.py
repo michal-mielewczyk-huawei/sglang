@@ -110,6 +110,8 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     mean_e2e_latency = 10000
     output_token_throughput = 2047.81
     max_attempts = 4
+    remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
+    dataset_name = "openmath"
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
         base_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "datasets"

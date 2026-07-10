@@ -903,13 +903,14 @@ def _download_dataset(name: str, remote_url: str):
         return
 
     start_timestamp = time.perf_counter()
-    ret = requests.get(remote_url, verify=False, proxies=proxies)
+    resp = requests.get(remote_url, verify=False, proxies=proxies)
     # print download stats 
+    resp.raise_for_status()
 
     print(f"Downloaded {remote_url} in {time.perf_counter() - start_timestamp}")
 
     with open(file_path, "wb") as f:
-        f.write(ret.content)
+        f.write(resp.content)
 
 # This is the base class
 KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
