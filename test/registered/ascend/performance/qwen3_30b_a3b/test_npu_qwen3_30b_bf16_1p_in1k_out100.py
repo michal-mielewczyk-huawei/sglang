@@ -143,6 +143,8 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
         openmath_path = self._download_dataset("openmath", remote_address)
 
+        import pdb
+        pdb.set_trace()
         openmath_dataset = pd.read_parquet(openmath_path).iloc
 
         client = openai.Client(base_url=f"http://{host}:{port}/v1", api_key="None")
