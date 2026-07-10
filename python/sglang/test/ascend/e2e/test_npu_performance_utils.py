@@ -961,8 +961,8 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         other_args = list(cls.other_args)
 
-        cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
-        cls.dataset_name = "openmath"
+        #cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
+        #cls.dataset_name = "openmath"
         with ThreadPoolExecutor(max_workers=1) as executor:
             download_future = executor.submit(
                     _download_dataset,
