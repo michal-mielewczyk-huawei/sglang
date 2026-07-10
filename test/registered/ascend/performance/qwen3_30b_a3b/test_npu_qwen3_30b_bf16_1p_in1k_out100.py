@@ -139,12 +139,22 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
+        base_dir = Path(os.path.dirname(os.path.realpath(__file__))/"datasets")
+        short_promts_file = basedir / "low_token_openmath.txt"
+        long_promts_file = basedir / "high_token_openmath.txt"
         remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
 
         openmath_path = self._download_dataset("openmath", remote_address)
 
+        with open(short_promts_file) as f:
+            short_promts = f.readlines()
+
+        with open(long_promts_file) as f:
+            long_promts = f.readlines()
+
         import pdb
         pdb.set_trace()
+
         openmath_dataset = pd.read_parquet(openmath_path).iloc
 
         client = openai.Client(base_url=f"http://{host}:{port}/v1", api_key="None")
