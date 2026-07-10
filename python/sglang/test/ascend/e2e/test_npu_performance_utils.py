@@ -874,7 +874,7 @@ def file_is_up_to_date(local_path: Path, remote_url: str):
     if not local_path.exists():
         return False
 
-    resp = = requests.head(remote_url, allow_redirections=True)
+    resp = requests.head(remote_url, allow_redirections=True)
 
     resp.raise_for_status()
 

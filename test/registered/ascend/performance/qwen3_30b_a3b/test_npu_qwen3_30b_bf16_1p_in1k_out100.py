@@ -138,8 +138,8 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
         base_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "datasets"
-        short_promts_file = basedir / "low_token_openmath.txt"
-        long_promts_file = basedir / "high_token_openmath.txt"
+        short_promts_file = base_dir / "low_token_openmath.txt"
+        long_promts_file = base_dir / "high_token_openmath.txt"
 
         parsed_url = urlparse(self.base_url)
         host = parsed_url.hostname
