@@ -137,9 +137,13 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-        base_dir = Path(os.path.dirname(os.path.realpath(__file__))/"datasets")
+        base_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "datasets"
         short_promts_file = basedir / "low_token_openmath.txt"
         long_promts_file = basedir / "high_token_openmath.txt"
+
+        parsed_url = urlparse(self.base_url)
+        host = parsed_url.hostname
+        port = parsed_url.port
 
         #openmath_path = self._download_dataset("openmath", remote_address)
         openmath_path = self.dataset_path
@@ -149,9 +153,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
         with open(long_promts_file) as f:
             long_promts = f.readlines()
-
-        import pdb
-        pdb.set_trace()
 
         openmath_dataset = pd.read_parquet(openmath_path).iloc
 
@@ -173,14 +174,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
                     )
 
             print(f"The server responed with {response}")
-
-        parsed_url = urlparse(self.base_url)
-        host = parsed_url.hostname
-        port = parsed_url.port
-
-        print(parsed_url)
-
-
 
         #self.run_throughput()
 

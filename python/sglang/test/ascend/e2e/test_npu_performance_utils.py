@@ -869,10 +869,31 @@ def assert_metrics(self, metrics):
             self.mean_e2e_latency * E2E_TOLERANCE,
         )
 
+def file_is_up_to_date(local_path: Path, remote_url: str):
 
-def _download_dataset(name: str, remote_address: str):
+    if not local_path.exists():
+        return False
+
+    resp = = requests.head(remote_url, allow_redirections=True)
+
+    resp.raise_for_status()
+
+    remote_size = resp.headers.get("Content-Length")
+
+    if remote_size is None:
+        return False
+
+    return local_path.stat().st_size == int(remote_size)
+
+
+def _download_dataset(name: str, remote_url: str):
     download_path = KVTC_DATASET_PATH
     download_path.mkdir(parents=True, exist_ok=True)
+
+    file_path = download_path / name
+
+    if file_is_up_to_date(file_path, remote_url):
+        return
 
     proxies = {
             "http": os.environ.get("http_proxy"),
@@ -882,11 +903,8 @@ def _download_dataset(name: str, remote_address: str):
     ret = requests.get(remote_address, verify=False, proxies=proxies)
     # print download stats 
 
-    file_path = download_path / name
     with open(file_path, "wb") as f:
         f.write(ret.content)
-
-    return file_path
 
 # This is the base class
 KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
@@ -939,7 +957,7 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
         cls.dataset_name = "openmath"
-        cls.download_worker = threading.Thread(target=_download_dataset, args=(cls.dataset_name, cls.remote_address))
+        cls.download_worker = threading.Thread(target=_download_dataset, args=(cls.dataset_name, cls.remote_address), daemon=True)
 
         cls.download_worker.start()
 
