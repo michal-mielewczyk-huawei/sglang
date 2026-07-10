@@ -4,6 +4,7 @@ import openai
 import pandas as pd
 from urllib.parse import urlparse
 from pathlib import Path
+import os
 
 from sglang.test.ascend.e2e.test_npu_performance_utils import (
     AISBENCHMARK_DATASET_DEFAULT,
@@ -117,8 +118,8 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         download_path.mkdir(parents=True, exist_ok=True)
 
         proxies = {
-                "http": None,
-                "https": None,
+                "http": os.environ.get("http_proxy"),
+                "https": os.environ.get("https_proxy"),,
                 }
 
         ret = requests.get(remote_address, verify=False, proxies=proxies)
