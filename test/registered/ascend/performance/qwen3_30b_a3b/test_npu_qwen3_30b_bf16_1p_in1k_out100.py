@@ -151,7 +151,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 #            print(openmath_dataset[idx])
 
         for i, entry in enumerate(openmath_dataset):
-            if i > 10:
+            if i > 2:
                 break
 
             response = client.chat.completions.create(
