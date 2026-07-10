@@ -119,7 +119,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 
         proxies = {
                 "http": os.environ.get("http_proxy"),
-                "https": os.environ.get("https_proxy"),,
+                "https": os.environ.get("https_proxy"),
                 }
 
         ret = requests.get(remote_address, verify=False, proxies=proxies)
