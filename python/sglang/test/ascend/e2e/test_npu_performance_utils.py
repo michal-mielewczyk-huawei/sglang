@@ -6,9 +6,10 @@ import threading
 import time
 from functools import wraps
 from urllib.parse import urlparse
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import requests
+import time
 
 from sglang.srt.utils import kill_process_tree
 from sglang.test.ascend.e2e.gen_dataset_fixed_len import (
@@ -901,8 +902,11 @@ def _download_dataset(name: str, remote_url: str):
         print(f"Skip downloading {file_path}. File exists")
         return
 
+    start_timestamp = time.perf_counter()
     ret = requests.get(remote_url, verify=False, proxies=proxies)
     # print download stats 
+
+    print(f"Downloaded {remote_url} in {time.perf_counter() - start_timestamp}")
 
     with open(file_path, "wb") as f:
         f.write(ret.content)
@@ -958,9 +962,12 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
         cls.dataset_name = "openmath"
-        cls.download_worker = threading.Thread(target=_download_dataset, args=(cls.dataset_name, cls.remote_address), daemon=True)
-
-        cls.download_worker.start()
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            download_future = executor.submit(
+                    _download_dataset,
+                    cls.dataset_name,
+                    cls.remote_address,
+            )
 
         cls.process = popen_launch_server(
             cls.model,
@@ -970,7 +977,7 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
             env=env,
         )
 
-        cls.download_worker.join()
+        download_future.result()
         cls.dataset_path = KVTC_DATASET_PATH / cls.dataset_name
 
     @classmethod
