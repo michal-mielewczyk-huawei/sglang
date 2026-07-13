@@ -174,8 +174,7 @@ class TestKVTCQwen30B_dump_openmath(TestAscendPerformanceTestCaseBase):
 class TestKVTCQwen30B_dump_fineweb(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
-    #model = QWEN3_30B_A3B_MODEL_PATH
-    model = QWEN3_0_6B_MODEL_PATH
+    model = QWEN3_30B_A3B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
     kvtc_remote_address = ["https://huggingface.co/datasets/HuggingFaceFW/fineweb/resolve/main/data/CC-MAIN-2025-26/000_00000.parquet"]
