@@ -8,6 +8,7 @@ from sglang.test.ascend.e2e.test_npu_performance_utils import (
     AISBENCHMARK_DATASET_DEFAULT,
     BENCHMARK_TOOL_DEFAULT,
     QWEN3_30B_A3B_MODEL_PATH,
+    QWEN3_0_6B_MODEL_PATH,
     TestAscendPerformanceTestCaseBase,
 )
 from sglang.test.ci.ci_register import register_npu_ci
@@ -117,7 +118,8 @@ async def run_requests(client, requets):
 class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
-    model = QWEN3_30B_A3B_MODEL_PATH
+    #model = QWEN3_30B_A3B_MODEL_PATH
+    model = QWEN3_0_6B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
     remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"

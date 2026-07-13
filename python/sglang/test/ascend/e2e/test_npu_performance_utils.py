@@ -77,6 +77,7 @@ DEEPSEEK_R1_W4A8_PER_CHANNEL_MODEL_PATH = (
 DEEPSEEK_V32_W8A8_MODEL_PATH = (
     "/root/.cache/modelscope/hub/models/vllm-ascend/DeepSeek-V3.2-W8A8"
 )
+QWEN3_0_6B_MODEL_PATH = "/root/.models/Qwen3-0.6B"
 QWEN3_8B_W8A8_MODEL_PATH = "/root/.cache/modelscope/hub/models/Qwen/Qwen3-8B-W8A8"
 QWEN3_8B_EAGLE_MODEL_PATH = "/root/.cache/modelscope/hub/models/Qwen/Eagle3-Qwen3-8B-zh"
 QWEN3_14B_MODEL_PATH = "/root/.cache/modelscope/hub/models/Qwen/Qwen3-14B"
