@@ -875,6 +875,7 @@ proxies = {
         "https": os.environ.get("https_proxy"),
         }
 
+KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
 def file_is_up_to_date(local_path: Path, remote_url: str):
 
     if not local_path.exists():
@@ -904,7 +905,6 @@ def _download_dataset(name: str, remote_url: str):
 
     start_timestamp = time.perf_counter()
     resp = requests.get(remote_url, verify=False, proxies=proxies)
-    # print download stats 
     resp.raise_for_status()
 
     print(f"Downloaded {remote_url} in {time.perf_counter() - start_timestamp}")
@@ -912,8 +912,6 @@ def _download_dataset(name: str, remote_url: str):
     with open(file_path, "wb") as f:
         f.write(resp.content)
 
-# This is the base class
-KVTC_DATASET_PATH = Path("/root/.cache/KVTC/datasets")
 class TestAscendPerformanceTestCaseBase(CustomTestCase):
     model = None
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
