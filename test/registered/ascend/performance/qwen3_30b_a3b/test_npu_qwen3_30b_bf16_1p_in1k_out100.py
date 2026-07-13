@@ -123,11 +123,12 @@ class TestKVTCQwen30B_dump_openmath(TestAscendPerformanceTestCaseBase):
     model = QWEN3_30B_A3B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    openmath_parts = 144
-    remote_address = [
-            f"https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/cot-00{i:03d}-of-00144.parquet"
-            for i in range(openmath_parts)
-            ]
+    openmath_parts = 1
+    kvtc_remote_address = ["https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"]
+    #remote_address = [
+    #        f"https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/cot-00{i:03d}-of-00144.parquet"
+    #        for i in range(openmath_parts)
+    #        ]
     kvtc_dataset_name = "openmath"
     client_concurrency = 16
 
@@ -147,7 +148,7 @@ class TestKVTCQwen30B_dump_openmath(TestAscendPerformanceTestCaseBase):
 
         dfs = []
         for i in range(self.openmath_parts):
-            f = cls.dataset_path / f"{cls.kvtc_dataset_name}_{i}"
+            f = self.dataset_path / f"{self.kvtc_dataset_name}_{i}"
 
             df = pd.read_parquet(f)
             dfs.append(df)
@@ -173,7 +174,8 @@ class TestKVTCQwen30B_dump_fineweb(TestAscendPerformanceTestCaseBase):
     model = QWEN3_0_6B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    kvtc_remote_address = ["https://huggingface.co/datasets/HuggingFaceFW/fineweb/resolve/main/data/CC-MAIN-2025-26/000_00000.parquet"]
+    kvtc_remote_address = ["https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"]
+    #kvtc_remote_address = ["https://huggingface.co/datasets/HuggingFaceFW/fineweb/resolve/main/data/CC-MAIN-2025-26/000_00000.parquet"]
     kvtc_dataset_name = "fineweb"
     client_concurrency = 16
 
@@ -191,7 +193,7 @@ class TestKVTCQwen30B_dump_fineweb(TestAscendPerformanceTestCaseBase):
         }
         self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
 
-        openmath_dataset = pd.read_parquet(self.dataset_path / f"{cls.kvtc_dataset_name}_{0}")
+        openmath_dataset = pd.read_parquet(self.dataset_path / f"{self.kvtc_dataset_name}_{0}")
 
         client = AsyncOpenAI(base_url=f"{self.base_url}/v1", api_key="None")
         submitted_ids = set()
