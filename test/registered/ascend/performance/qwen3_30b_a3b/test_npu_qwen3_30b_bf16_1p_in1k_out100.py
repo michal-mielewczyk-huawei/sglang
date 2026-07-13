@@ -1,16 +1,13 @@
-import requests
 import unittest
+from pathlib import Path
+
 import openai
 import pandas as pd
-from urllib.parse import urlparse
-from pathlib import Path
-import os
 
 from sglang.test.ascend.e2e.test_npu_performance_utils import (
     AISBENCHMARK_DATASET_DEFAULT,
     BENCHMARK_TOOL_DEFAULT,
     QWEN3_30B_A3B_MODEL_PATH,
-    QWEN3_A3B_EAGLE_MODEL_PATH,
     TestAscendPerformanceTestCaseBase,
 )
 from sglang.test.ci.ci_register import register_npu_ci
@@ -114,41 +111,50 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     dataset_name = "openmath"
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-        base_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "datasets"
-        short_promts_file = base_dir / "low_token_openmath.txt"
-        long_promts_file = base_dir / "high_token_openmath.txt"
+        selector_dir = Path(__file__).resolve().parent / "datasets"
+        selector_paths = (
+            selector_dir / "low_token_openmath.txt",
+            selector_dir / "high_token_openmath.txt",
+        )
+        selected_ids = {
+            int(line.strip())
+            for selector_path in selector_paths
+            for line in selector_path.read_text().splitlines()
+            if line.strip()
+        }
+        self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
 
-        parsed_url = urlparse(self.base_url)
-        host = parsed_url.hostname
-        port = parsed_url.port
+        openmath_dataset = pd.read_parquet(self.dataset_path)
+        client = openai.Client(base_url=f"{self.base_url}/v1", api_key="None")
+        submitted_ids = set()
 
-        openmath_path = self.dataset_path
+        for prompt_id, entry in openmath_dataset.iterrows():
+            if prompt_id not in selected_ids:
+                continue
 
-        with open(short_promts_file) as f:
-            short_promts = f.readlines()
-
-        with open(long_promts_file) as f:
-            long_promts = f.readlines()
-
-        openmath_dataset = pd.read_parquet(openmath_path).iloc
-
-        client = openai.Client(base_url=f"http://{host}:{port}/v1", api_key="None")
-
-        for i, entry in enumerate(openmath_dataset):
-            if i > 2:
-                break
+            prompt = entry["problem"]
+            #self.assertIsInstance(prompt, str, f"Prompt {prompt_id} is not text")
+            self.assertTrue(prompt, f"Prompt {prompt_id} is empty")
 
             response = client.chat.completions.create(
-                    model="Qwen3-30B-A3B",
-                    messages = [
-                            {"role": "user", "content": entry["problem"]},
-                        ],
-                    temperature=0,
-                    )
+                model="Qwen3-30B-A3B",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+            )
+            submitted_ids.add(prompt_id)
 
-            print(f"The server responed with {response}")
+            with self.subTest(prompt_id=prompt_id):
+                self.assertTrue(response.choices, "Completion has no choices")
+                self.assertTrue(
+                    response.choices[0].message.content,
+                    "Completion has an empty assistant message",
+                )
 
-        #self.run_throughput()
+        self.assertSetEqual(
+            submitted_ids,
+            selected_ids,
+            "Some selected OpenMath prompt IDs were not found in the parquet dataset",
+        )
 
 
 if __name__ == "__main__":
