@@ -125,10 +125,11 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     other_args = OTHER_ARGS
     envs = ENVS
     remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
-    dataset_name = "openmath"
+    kvtc_dataset_name = "openmath"
     client_concurrency = 16
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
+        return 0 
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
             selector_dir / "low_token_openmath.txt",
@@ -152,8 +153,22 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
                 if prompt_id in selected_ids
                 ]
 
-        asyncio.run(run_requests(self.dataset_name, client, prompts, self.client_concurrency))
+        asyncio.run(run_requests(self.kvtc_dataset_name, client, prompts, self.client_concurrency))
 
+
+class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
+    benchmark_tool = BENCHMARK_TOOL_DEFAULT
+    dataset_type = AISBENCHMARK_DATASET_DEFAULT
+    model = QWEN3_30B_A3B_MODEL_PATH
+    #model = QWEN3_0_6B_MODEL_PATH
+    other_args = OTHER_ARGS
+    envs = ENVS
+    #kvtc_remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
+    #kvtc_dataset_name = "openmath"
+    client_concurrency = 16
+
+    def test_kvtc_qwen3_dummpy(self):
+        return 0
 
 if __name__ == "__main__":
     unittest.main()

@@ -962,12 +962,12 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         download_executor = None
         download_future = None
-        remote_address = getattr(cls, "remote_address", None)
+        remote_address = getattr(cls, "kvtc_remote_address", None)
         if remote_address:
             download_executor = ThreadPoolExecutor(max_workers=1)
             download_future = download_executor.submit(
                 _download_dataset,
-                cls.dataset_name,
+                cls.kvtc_dataset_name,
                 remote_address,
             )
 
@@ -982,7 +982,7 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
             if download_future:
                 download_future.result()
-                cls.dataset_path = KVTC_DATASET_PATH / cls.dataset_name
+                cls.dataset_path = KVTC_DATASET_PATH / cls.kvtc_dataset_name
         finally:
             if download_executor:
                 download_executor.shutdown(wait=True)
