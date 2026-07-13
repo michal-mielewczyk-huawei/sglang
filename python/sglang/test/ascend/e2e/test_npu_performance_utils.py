@@ -961,25 +961,32 @@ class TestAscendPerformanceTestCaseBase(CustomTestCase):
 
         other_args = list(cls.other_args)
 
-        #cls.remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
-        #cls.dataset_name = "openmath"
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            download_future = executor.submit(
-                    _download_dataset,
-                    cls.dataset_name,
-                    cls.remote_address,
+        download_executor = None
+        download_future = None
+        remote_address = getattr(cls, "remote_address", None)
+        if remote_address:
+            download_executor = ThreadPoolExecutor(max_workers=1)
+            download_future = download_executor.submit(
+                _download_dataset,
+                cls.dataset_name,
+                remote_address,
             )
 
-        cls.process = popen_launch_server(
-            cls.model,
-            cls.base_url,
-            timeout=cls.timeout,
-            other_args=other_args,
-            env=env,
-        )
+        try:
+            cls.process = popen_launch_server(
+                cls.model,
+                cls.base_url,
+                timeout=cls.timeout,
+                other_args=other_args,
+                env=env,
+            )
 
-        download_future.result()
-        cls.dataset_path = KVTC_DATASET_PATH / cls.dataset_name
+            if download_future:
+                download_future.result()
+                cls.dataset_path = KVTC_DATASET_PATH / cls.dataset_name
+        finally:
+            if download_executor:
+                download_executor.shutdown(wait=True)
 
     @classmethod
     def tearDownClass(cls):
