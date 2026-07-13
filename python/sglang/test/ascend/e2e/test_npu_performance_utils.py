@@ -895,7 +895,7 @@ def file_is_up_to_date(local_path: Path, remote_url: str):
 
 
 def _download_dataset(name: str, remote_urls: []):
-    download_path = KVTC_DATASET_PATH
+    download_path = KVTC_DATASET_PATH / name
     download_path.mkdir(parents=True, exist_ok=True)
 
     for i, url in enumerate(remote_urls):

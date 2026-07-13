@@ -117,20 +117,21 @@ async def run_requests(dataset_name, client, requests, client_concurrency):
     return await asyncio.gather(*tasks)
 
 
-class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
+class TestKVTCQwen30B_dump_openmath(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
     model = QWEN3_30B_A3B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
+    openmath_parts = 144
     remote_address = [
-            f"https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/cot-00{i:03d}-of-00144.parquet",
-            for i in range(144)
+            f"https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/cot-00{i:03d}-of-00144.parquet"
+            for i in range(openmath_parts)
             ]
     kvtc_dataset_name = "openmath"
     client_concurrency = 16
 
-    def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
+    def test_kvtc_qwen3_30b_dump_openmath(self):
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
             selector_dir / "low_token_openmath.txt",
@@ -144,7 +145,15 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         }
         self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
 
-        openmath_dataset = pd.read_parquet(self.dataset_path)
+        dfs = []
+        for i in range(self.openmath_parts):
+            f = cls.dataset_path / f"{cls.kvtc_dataset_name}_{i}"
+
+            df = pd.read_parquet(f)
+            dfs.append(df)
+
+        openmath_dataset = pd.concat(dfs, ignore_index=True)
+
         client = AsyncOpenAI(base_url=f"{self.base_url}/v1", api_key="None")
         submitted_ids = set()
 
@@ -157,7 +166,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         asyncio.run(run_requests(self.kvtc_dataset_name, client, prompts, self.client_concurrency))
 
 
-class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
+class TestKVTCQwen30B_dump_fineweb(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
     #model = QWEN3_30B_A3B_MODEL_PATH
@@ -168,7 +177,7 @@ class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
     kvtc_dataset_name = "fineweb"
     client_concurrency = 16
 
-    def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
+    def test_kvtc_qwen3_30b_dump_fineweb(self):
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
             selector_dir / "low_token_fineweb.txt",
@@ -182,7 +191,8 @@ class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
         }
         self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
 
-        openmath_dataset = pd.read_parquet(self.dataset_path)
+        openmath_dataset = pd.read_parquet(self.dataset_path / f"{cls.kvtc_dataset_name}_{0}")
+
         client = AsyncOpenAI(base_url=f"{self.base_url}/v1", api_key="None")
         submitted_ids = set()
 
