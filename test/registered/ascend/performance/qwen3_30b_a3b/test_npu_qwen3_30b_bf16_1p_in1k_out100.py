@@ -146,6 +146,11 @@ class TestKVTCQwen30B_dump_openmath(TestAscendPerformanceTestCaseBase):
         }
         self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
 
+        self.assertEqual(
+                len(prompts), selected_ids,
+                "Some selected OpenMath prompt IDs were not found in the parquet dataset",
+        )
+
         dfs = []
         for i in range(self.openmath_parts):
             f = self.dataset_path / f"{self.kvtc_dataset_name}_{i}"
@@ -192,6 +197,11 @@ class TestKVTCQwen30B_dump_fineweb(TestAscendPerformanceTestCaseBase):
             if line.strip()
         }
         self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
+
+        self.assertEqual(
+                len(prompts), selected_ids,
+                "Some selected OpenMath prompt IDs were not found in the parquet dataset",
+        )
 
         openmath_dataset = pd.read_parquet(self.dataset_path / f"{self.kvtc_dataset_name}_{0}")
 
