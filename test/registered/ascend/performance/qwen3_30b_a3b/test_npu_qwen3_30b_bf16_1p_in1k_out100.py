@@ -51,13 +51,11 @@ OTHER_ARGS = [
     "--disable-radix-cache",
     "--chunked-prefill-size",
     -1,
-    "--max-prefill-tokens",
-    8300,
     "--tp-size",
     2,
     "--enable-dp-attention",
     "--dp-size",
-    2,
+    1,
     "--mem-fraction-static",
     0.85,
     "--cuda-graph-bs",
@@ -99,16 +97,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     model = QWEN3_30B_A3B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    dataset_name = "random"
-    max_concurrency = 162
-    num_prompts = 624
-    input_len = 1000
-    output_len = 100
-    random_range_ratio = 1
-    seed = 1
-    mean_e2e_latency = 10000
-    output_token_throughput = 2047.81
-    max_attempts = 4
     remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
     dataset_name = "openmath"
 
@@ -135,7 +123,6 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
                 continue
 
             prompt = entry["problem"]
-            #self.assertIsInstance(prompt, str, f"Prompt {prompt_id} is not text")
             self.assertTrue(prompt, f"Prompt {prompt_id} is empty")
 
             response = client.chat.completions.create(
@@ -151,6 +138,8 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
                     response.choices[0].message.content,
                     "Completion has an empty assistant message",
                 )
+
+            print(f"{dataset_name} prompt {prompt_id} {response.usage.total_tokens=}")
 
         self.assertSetEqual(
             submitted_ids,
