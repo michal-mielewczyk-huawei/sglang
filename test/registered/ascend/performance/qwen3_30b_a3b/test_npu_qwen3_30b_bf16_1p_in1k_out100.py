@@ -96,8 +96,8 @@ import asyncio
 from openai import AsyncOpenAI
 
 
-async def run_requests(dataset_name, client, requests):
-    concurrency_semaphore = asyncio.Semaphore(16)
+async def run_requests(dataset_name, client, requests, client_concurrency):
+    concurrency_semaphore = asyncio.Semaphore(client_concurrency)
 
     async def send_request(dataset_name, client, entry):
         prompt_id, prompt = entry
@@ -126,6 +126,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     envs = ENVS
     remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
     dataset_name = "openmath"
+    client_concurrency = 16
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
         selector_dir = Path(__file__).resolve().parent / "datasets"
@@ -146,45 +147,12 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         submitted_ids = set()
 
         prompts = [
-                (idx, entry)
+                (prompt_id, entry)
                 for prompt_id, entry in openmath_dataset.iterrows()
                 if prompt_id in selected_ids
                 ]
 
-#        self.assertEqual(
-#                len(prompts), selected_ids,
-#                "Some selected OpenMath prompt IDs were not found in the parquet dataset",
-#                )
-#
-        asyncio.run(run_requests(self.dataset_name, client, prompts))
-
-
-
-#            if prompt_id not in selected_ids:
-#                continue
-#
-#            prompt = entry["problem"]
-#            self.assertTrue(prompt, f"Prompt {prompt_id} is empty")
-#
-#            response = client.chat.completions.create(
-#                model="Qwen3-30B-A3B",
-#                messages=[{"role": "user", "content": prompt}],
-#                temperature=0,
-#            )
-#            submitted_ids.add(prompt_id)
-#
-#            with self.subTest(prompt_id=prompt_id):
-#                self.assertTrue(response.choices, "Completion has no choices")
-#                self.assertTrue(
-#                    response.choices[0].message.content,
-#                    "Completion has an empty assistant message",
-#                )
-#
-#        self.assertSetEqual(
-#            submitted_ids,
-#            selected_ids,
-#            "Some selected OpenMath prompt IDs were not found in the parquet dataset",
-#        )
+        asyncio.run(run_requests(self.dataset_name, client, prompts, self.client_concurrency))
 
 
 if __name__ == "__main__":
