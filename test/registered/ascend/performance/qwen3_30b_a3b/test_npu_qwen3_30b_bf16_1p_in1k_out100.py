@@ -89,6 +89,8 @@ OTHER_ARGS = [
     "qwen3",
     "--tool-call-parser",
     "qwen",
+    "--dump-kv-path",
+    "/root/.cache/KVTC/openmath_dump"
 ]
 
 class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
