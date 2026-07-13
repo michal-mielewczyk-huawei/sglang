@@ -129,7 +129,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     client_concurrency = 16
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-        return 0 
+        return 0
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
             selector_dir / "low_token_openmath.txt",
@@ -160,15 +160,38 @@ class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
     model = QWEN3_30B_A3B_MODEL_PATH
-    #model = QWEN3_0_6B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    #kvtc_remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
-    #kvtc_dataset_name = "openmath"
+    kvtc_remote_address = "https://www.paulgraham.com/earn.html"
+    kvtc_dataset_name = "fineweb"
     client_concurrency = 16
 
-    def test_kvtc_qwen3_dummpy(self):
+    def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
         return 0
+        selector_dir = Path(__file__).resolve().parent / "datasets"
+        selector_paths = (
+            selector_dir / "low_token_openmath.txt",
+            selector_dir / "high_token_openmath.txt",
+        )
+        selected_ids = {
+            int(line.strip())
+            for selector_path in selector_paths
+            for line in selector_path.read_text().splitlines()
+            if line.strip()
+        }
+        self.assertTrue(selected_ids, "OpenMath prompt selector files are empty")
+
+        openmath_dataset = pd.read_parquet(self.dataset_path)
+        client = AsyncOpenAI(base_url=f"{self.base_url}/v1", api_key="None")
+        submitted_ids = set()
+
+        prompts = [
+                (prompt_id, entry)
+                for prompt_id, entry in openmath_dataset.iterrows()
+                if prompt_id in selected_ids
+                ]
+
+        asyncio.run(run_requests(self.kvtc_dataset_name, client, prompts, self.client_concurrency))
 
 if __name__ == "__main__":
     unittest.main()
