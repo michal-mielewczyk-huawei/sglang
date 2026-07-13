@@ -120,16 +120,17 @@ async def run_requests(dataset_name, client, requests, client_concurrency):
 class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
     benchmark_tool = BENCHMARK_TOOL_DEFAULT
     dataset_type = AISBENCHMARK_DATASET_DEFAULT
-    #model = QWEN3_30B_A3B_MODEL_PATH
-    model = QWEN3_0_6B_MODEL_PATH
+    model = QWEN3_30B_A3B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    remote_address = "https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/additional_problems-00000-of-00001.parquet"
+    remote_address = [
+            f"https://huggingface.co/datasets/nvidia/OpenMathReasoning/resolve/main/data/cot-00{i:03d}-of-00144.parquet",
+            for i in range(144)
+            ]
     kvtc_dataset_name = "openmath"
     client_concurrency = 16
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-        return 0
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
             selector_dir / "low_token_openmath.txt",
@@ -163,16 +164,15 @@ class TestKVTCQwen30B_dummy(TestAscendPerformanceTestCaseBase):
     model = QWEN3_0_6B_MODEL_PATH
     other_args = OTHER_ARGS
     envs = ENVS
-    kvtc_remote_address = "https://www.paulgraham.com/earn.html"
+    kvtc_remote_address = ["https://huggingface.co/datasets/HuggingFaceFW/fineweb/resolve/main/data/CC-MAIN-2025-26/000_00000.parquet"]
     kvtc_dataset_name = "fineweb"
     client_concurrency = 16
 
     def test_kvtc_qwen3_30b_generate_openmath_dumps(self):
-        return 0
         selector_dir = Path(__file__).resolve().parent / "datasets"
         selector_paths = (
-            selector_dir / "low_token_openmath.txt",
-            selector_dir / "high_token_openmath.txt",
+            selector_dir / "low_token_fineweb.txt",
+            selector_dir / "high_token_fineweb.txt",
         )
         selected_ids = {
             int(line.strip())

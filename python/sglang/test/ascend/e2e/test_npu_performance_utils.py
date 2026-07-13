@@ -894,24 +894,25 @@ def file_is_up_to_date(local_path: Path, remote_url: str):
     return local_path.stat().st_size == int(remote_size)
 
 
-def _download_dataset(name: str, remote_url: str):
+def _download_dataset(name: str, remote_urls: []):
     download_path = KVTC_DATASET_PATH
     download_path.mkdir(parents=True, exist_ok=True)
 
-    file_path = download_path / name
+    for i, url in enumerate(remote_urls):
+        file_path = download_path / f"{name}_{i}"
 
-    if file_is_up_to_date(file_path, remote_url):
-        print(f"Skip downloading {file_path}. File exists")
-        return
+        if file_is_up_to_date(file_path, url):
+            print(f"Skip downloading {file_path}. File exists")
+            continue
 
-    start_timestamp = time.perf_counter()
-    resp = requests.get(remote_url, verify=False, proxies=proxies)
-    resp.raise_for_status()
+        start_timestamp = time.perf_counter()
+        resp = requests.get(url, verify=False, proxies=proxies)
+        resp.raise_for_status()
 
-    print(f"Downloaded {remote_url} in {time.perf_counter() - start_timestamp}")
+        print(f"Downloaded {url} in {time.perf_counter() - start_timestamp}")
 
-    with open(file_path, "wb") as f:
-        f.write(resp.content)
+        with open(file_path, "wb") as f:
+            f.write(resp.content)
 
 class TestAscendPerformanceTestCaseBase(CustomTestCase):
     model = None
