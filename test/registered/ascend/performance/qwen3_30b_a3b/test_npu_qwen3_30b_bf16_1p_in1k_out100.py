@@ -96,21 +96,23 @@ import asyncio
 from openai import AsyncOpenAI
 
 
-async def run_requests(client, requets):
+async def run_requests(dataset_name, client, requests):
     concurrency_semaphore = asyncio.Semaphore(16)
 
-    async def send_request(client, entry):
+    async def send_request(dataset_name, client, entry):
+        prompt_id, prompt = entry
 
-        async with semaphore:
+        async with concurrency_semaphore:
+            print(f"Send {prompt_id=}")
             response = await client.chat.completions.create(
                 model="Qwen3-30B-A3B",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{"role": "user", "content": prompt["problem"]}],
                 temperature=0,
             )
 
             print(f"{dataset_name} prompt {prompt_id} {response.usage.total_tokens=}")
 
-    tasks = [send_request(client, r) for r in requests]
+    tasks = [send_request(dataset_name, client, r) for r in requests]
 
     return await asyncio.gather(*tasks)
 
@@ -144,7 +146,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
         submitted_ids = set()
 
         prompts = [
-                entry
+                (idx, entry)
                 for prompt_id, entry in openmath_dataset.iterrows()
                 if prompt_id in selected_ids
                 ]
@@ -154,7 +156,7 @@ class TestKVTCQwen30B(TestAscendPerformanceTestCaseBase):
 #                "Some selected OpenMath prompt IDs were not found in the parquet dataset",
 #                )
 #
-        asyncio.run(run_requests(client, prompt))
+        asyncio.run(run_requests(self.dataset_name, client, prompts))
 
 
 
